@@ -12,7 +12,8 @@ $action = isset($_GET['action']) ? $_GET['action'] : '';
 // Adiciona um livro ao carrinho
 if ($action === 'add' && isset($_POST['code_ouvrage']) && isset($_POST['nom_ouvrage'])) {
     $code_ouvrage = $_POST['code_ouvrage'];
-    $nom_ouvrage = $_POST['nom_ouvrage'];
+    $nom_ouvrage = base64_decode($_POST['nom_ouvrage']);
+
 
     // Verifica se o livro já está no carrinho
     if (!isset($_SESSION['panier'][$code_ouvrage])) {

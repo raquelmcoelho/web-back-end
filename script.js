@@ -53,12 +53,15 @@ function affiche_exemplaires(ouvrageCode, ouvrageNom, exemplaires) {
     }
     exemplaires.forEach(exemplaire => {
         console.log(exemplaire);
-        ul.innerHTML += `<li>Code: ${exemplaire.code}`
+        ul.innerHTML = `<li>Code: ${exemplaire.code}`
         if (exemplaire.prix !== null) {
             ul.innerHTML += `Prix: ${exemplaire.prix} euros`;
-            ul.innerHTML += `<button onclick="addToCart(${ouvrageCode}, '${ouvrageNom}')"> 🛒 Ajouter </button>`;
-            ul.innerHTML += `</li>`;
+            let encodedNom = btoa(unescape(encodeURIComponent(ouvrageNom)));
+            ul.innerHTML += `<button onclick='addToCart(${ouvrageCode}, "${encodedNom}")'> 🛒 Ajouter </button>`;
+
+
         }
+        ul.innerHTML += `</li>`
     });
 }
 
@@ -74,10 +77,10 @@ function recherche_ouvrages_auteur(code) {
 }
 
 
-function addToCart(code_ouvrage, nom_ouvrage) {
+function addToCart(code_ouvrage, encoded_nom_ouvrage) {
     fetch('panier.php?action=add', {
         method: 'POST',
-        body: new URLSearchParams({ code_ouvrage, nom_ouvrage }),
+        body: new URLSearchParams({ code_ouvrage, nom_ouvrage: encoded_nom_ouvrage }),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     })
     .then(response => response.json())
