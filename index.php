@@ -34,10 +34,10 @@ session_start();
 
 <nav>
     Recherche :
-    <label for="par-auteur">Par Auteur:</label>
+    <label for="debnom">Par Auteur:</label>
     <input type="text" id="debnom" onkeyup="recherche_auteurs()">
     <br>
-    <label for="par-titre">Par Titre:</label>
+    <label for="debtitre">Par Titre:</label>
     <input type="text" id="debtitre" onkeyup="recherche_ouvrages_titre()">
     <br>
 </nav>

@@ -9,17 +9,17 @@ function recherche_auteurs() {
     return null;
 }
   let xhr = new XMLHttpRequest();
-  xhr.open(
-    "GET",
-    "recherche_auteurs.php?debnom=" + encodeURIComponent(debnom),
-    true
-  );
   xhr.onreadystatechange = function () {
     if (xhr.readyState == 4 && xhr.status == 200) {
       affiche_auteurs(JSON.parse(xhr.responseText));
     }
   };
-  xhr.send();
+  xhr.open(
+    "GET",
+    "recherche_auteurs.php?debnom=" + encodeURIComponent(debnom),
+    true
+  );
+  xhr.send(null);
 }
 
 function affiche_auteurs(auteurs) {
@@ -38,16 +38,16 @@ function recherche_ouvrages_titre() {
     return null;
   }
   let xhr = new XMLHttpRequest();
-  xhr.open(
-    "GET",
-    "recherche_ouvrages_titre.php?debtitre=" + encodeURIComponent(debtitre),
-    true
-  );
   xhr.onreadystatechange = function () {
     if (xhr.readyState == 4 && xhr.status == 200) {
       affiche_ouvrages(JSON.parse(xhr.responseText));
     }
   };
+  xhr.open(
+    "GET",
+    "recherche_ouvrages_titre.php?debtitre=" + encodeURIComponent(debtitre),
+    true
+  );
   xhr.send();
 }
 

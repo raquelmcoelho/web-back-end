@@ -1,17 +1,30 @@
 <?php
-header("Content-Type: application/json; charset=UTF-8");
-$pdo = new PDO("pgsql:host=localhost;dbname=livres", "postgres", "");
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+if (isset($_GET["code"])){
+    $code_auteur=$_GET["code"];
+}
+else die ("Code inconnu");
 
-$code_auteur = $_GET['code'] ?? 0;
-$stmt = $pdo->prepare("
+include "connexion.php" ;
+
+$req_livres = "
     SELECT o.code, o.nom, json_agg(json_build_object('code', e.code, 'prix', e.prix)) as exemplaires 
     FROM ouvrage o 
     JOIN exemplaire e ON o.code = e.code_ouvrage 
     JOIN ecrit_par ec ON o.code = ec.code_ouvrage 
     WHERE ec.code_auteur = ?
     GROUP BY o.code, o.nom
-");
-$stmt->execute([$code_auteur]);
-echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+";
+
+try {
+    $res_livres = $connexion->prepare($req_livres);
+    $res_livres->execute([$code_auteur]);
+} 
+catch (PDOException $e) {
+    die('Erreur : ' . $e→getMessage()) ;
+}
+$livres= $res_livres->fetchAll(PDO::FETCH_ASSOC);     
+header("Content-Type: application/json; charset=UTF-8");
+echo json_encode($livres);
+$res_livres =null ;  
+$connexion =null ;   
 ?>

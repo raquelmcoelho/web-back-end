@@ -1,10 +1,23 @@
 <?php
-header("Content-Type: application/json; charset=UTF-8");
-$pdo = new PDO("pgsql:host=localhost;dbname=livres", "postgres", "");
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+if (isset($_GET["debnom"])){
+    $debnom=$_GET["debnom"];
+}
+else die ("Debnom inconnu");
 
-$debnom = $_GET['debnom'] ?? '';
-$stmt = $pdo->prepare("SELECT code, nom, prenom FROM auteurs WHERE nom ILIKE ?");
-$stmt->execute(["%$debnom%"]);
-echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+include "connexion.php" ;
+
+$req_auteurs="SELECT code, nom, prenom FROM auteurs WHERE nom ILIKE ? ORDER BY nom";
+try {
+    $res_auteurs = $connexion->prepare($req_auteurs);
+    $res_auteurs->execute(["%$debnom%"]);
+} 
+catch (PDOException $e) {
+    die('Erreur : ' . $e→getMessage()) ;
+}
+
+$auteurs= $res_auteurs->fetchAll(PDO::FETCH_ASSOC);     
+header("Content-Type: application/json; charset=UTF-8");
+echo json_encode($auteurs);
+$res_auteurs =null ;  
+$connexion =null ;   
 ?>
