@@ -1,5 +1,5 @@
 function recherche_auteurs() {
-    let debnom = document.getElementById("input-auteur").value;
+    let debnom = document.getElementById("debnom").value;
     let xhr = new XMLHttpRequest();
     xhr.open("GET", "recherche_auteurs.php?debnom=" + encodeURIComponent(debnom), true);
     xhr.onreadystatechange = function () {
@@ -20,7 +20,7 @@ function affiche_auteurs(auteurs) {
 }
 
 function recherche_ouvrages_titre() {
-    let debtitre = document.getElementById("input-livre").value;
+    let debtitre = document.getElementById("debtitre").value;
     let xhr = new XMLHttpRequest();
     xhr.open("GET", "recherche_ouvrages_titre.php?debtitre=" + encodeURIComponent(debtitre), true);
     xhr.onreadystatechange = function () {
@@ -35,16 +35,30 @@ function affiche_ouvrages(ouvrages) {
     let divDroite = document.getElementById("div-droite");
     divDroite.innerHTML = "<ol>";
     ouvrages.forEach(ouvrage => {
+        console.log(ouvrage);
         divDroite.innerHTML += `<li>${ouvrage.nom}<ul id="ul-${ouvrage.code}"></ul></li>`;
-        affiche_exemplaires(ouvrage.code, ouvrage.exemplaires);
+        affiche_exemplaires(ouvrage.code, ouvrage.nom, ouvrage.exemplaires);
     });
     divDroite.innerHTML += "</ol>";
 }
 
-function affiche_exemplaires(ouvrageCode, exemplaires) {
+function affiche_exemplaires(ouvrageCode, ouvrageNom, exemplaires) {
     let ul = document.getElementById(`ul-${ouvrageCode}`);
+    exemplaires = JSON.parse(exemplaires);
+    if (exemplaires.length === 0) {
+        ul.innerHTML += `<li>Aucun exemplaire disponible</li>`;
+    }
+    if (exemplaires.length > 0) {
+        ul.innerHTML += `<li>Exemplaires disponibles:</li>`;
+    }
     exemplaires.forEach(exemplaire => {
-        ul.innerHTML += `<li>${exemplaire.nom}, ${exemplaire.prix} euros</li>`;
+        console.log(exemplaire);
+        ul.innerHTML += `<li>Code: ${exemplaire.code}`
+        if (exemplaire.prix !== null) {
+            ul.innerHTML += `Prix: ${exemplaire.prix} euros`;
+            ul.innerHTML += `<button onclick="addToCart(${ouvrageCode}, '${ouvrageNom}')"> 🛒 Ajouter </button>`;
+            ul.innerHTML += `</li>`;
+        }
     });
 }
 
@@ -59,26 +73,28 @@ function recherche_ouvrages_auteur(code) {
     xhr.send();
 }
 
-function affiche_ouvrages(ouvrages) {
-    let divDroite = document.getElementById("div-droite");
-    divDroite.innerHTML = "<ol>";
-    ouvrages.forEach(ouvrage => {
-        divDroite.innerHTML += `
-            <li>${ouvrage.nom} 
-                <button onclick="addToCart(${ouvrage.code})">🛒 Ajouter</button>
-                <ul id="ul-${ouvrage.code}"></ul>
-            </li>`;
-        affiche_exemplaires(ouvrage.code, ouvrage.exemplaires);
-    });
-    divDroite.innerHTML += "</ol>";
+
+function addToCart(code_ouvrage, nom_ouvrage) {
+    fetch('panier.php?action=add', {
+        method: 'POST',
+        body: new URLSearchParams({ code_ouvrage, nom_ouvrage }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    })
+    .then(response => response.json())
+    .then(data => alert(data.message))
+    .catch(error => console.error('Erreur:', error));
 }
 
-function addToCart(code_ouvrage) {
-    fetch('panier.php?action=add', {
+function removeLivre(code_ouvrage) {
+    fetch('panier.php?action=remove', {
         method: 'POST',
         body: new URLSearchParams({ code_ouvrage }),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    }).then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Erreur:', error));
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        location.reload(); // Atualiza a página para refletir a remoção do item
+    })
+    .catch(error => console.error('Erreur:', error));
 }

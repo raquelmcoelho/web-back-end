@@ -1,14 +1,3 @@
-<?php //require 'recherche_auteurs.php'; 
-?>
-<?php //require 'recherche_ouvrages_auteur.php'; 
-?>
-<?php //require 'recherche_ouvrages_titre.php'; 
-?>
-<?php //require 'panier.php'; 
-?>
-<?php //require 'counter.php'; 
-?>
-
 <?php 
 require 'counter.php'; 
 session_start();
@@ -37,23 +26,19 @@ session_start();
 
     <section id="menu">
         <h5>Bienvenue Nom Prénom</h5>
-        <a href="panier.php"><h5>Voir le Panier</h5></a>
+        <a href="panier.php?"><h5>Voir le Panier</h5></a>
         <h5>Quitter</h5>
     </section>
+
 </header>
 
 <nav>
     Recherche :
-    <ul>
-<li>Par Auteur : <input id="debnom" onkeyup="recherche_auteurs()"></li>
-<li>Par Titre :    <input id="debtitre" onkeyup="recherche_ouvrages_titre()"></li>
-    </ul>
-
     <label for="par-auteur">Par Auteur:</label>
-    <input type="text" id="input-auteur" name="input-auteur" onkeyup="recherche_auteurs()">
+    <input type="text" id="debnom" onkeyup="recherche_auteurs()">
     <br>
     <label for="par-titre">Par Titre:</label>
-    <input type="text" id="input-livre" name="input-livre" onkeyup="recherche_ouvrages_titre()">
+    <input type="text" id="debtitre" onkeyup="recherche_ouvrages_titre()">
     <br>
 </nav>
 

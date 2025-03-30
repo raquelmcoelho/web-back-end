@@ -1,24 +1,42 @@
 <?php
 session_start();
 
-// Connexion à la base de données
-try {
-    $pdo = new PDO("pgsql:host=localhost;dbname=livres", "postgres", "");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Erreur de connexion : " . $e->getMessage());
+// Inicializa o carrinho se ainda não existir
+if (!isset($_SESSION['panier'])) {
+    $_SESSION['panier'] = [];
 }
 
-// Supprimer un article du panier
-if (isset($_POST['remove'])) {
-    $code = $_POST['remove'];
-    if (isset($_SESSION['panier'][$code])) {
-        unset($_SESSION['panier'][$code]);
+// Obtém a ação da requisição
+$action = isset($_GET['action']) ? $_GET['action'] : '';
+
+// Adiciona um livro ao carrinho
+if ($action === 'add' && isset($_POST['code_ouvrage']) && isset($_POST['nom_ouvrage'])) {
+    $code_ouvrage = $_POST['code_ouvrage'];
+    $nom_ouvrage = $_POST['nom_ouvrage'];
+
+    // Verifica se o livro já está no carrinho
+    if (!isset($_SESSION['panier'][$code_ouvrage])) {
+        $_SESSION['panier'][$code_ouvrage] = $nom_ouvrage;
     }
+
+    echo json_encode(["message" => "Livre ajouté au panier"]);
+    exit;
 }
 
-// Afficher les articles du panier
-$panier = $_SESSION['panier'] ?? [];
+// Remove um livro do carrinho
+if ($action === 'remove' && isset($_POST['code_ouvrage'])) {
+    $code_ouvrage = $_POST['code_ouvrage'];
+
+    if (isset($_SESSION['panier'][$code_ouvrage])) {
+        unset($_SESSION['panier'][$code_ouvrage]);
+    }
+
+    echo json_encode(["message" => "Livre retiré du panier"]);
+    exit;
+}
+
+// Exibir o carrinho
+$panier = $_SESSION['panier'];
 ?>
 
 <!DOCTYPE html>
@@ -27,23 +45,27 @@ $panier = $_SESSION['panier'] ?? [];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panier</title>
-    <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Votre Panier</h1>
-    <?php if (empty($panier)): ?>
-        <p>Votre panier est vide.</p>
-    <?php else: ?>
-        <ul>
-            <?php foreach ($panier as $code => $nom): ?>
-                <li><?= htmlspecialchars($nom) ?> 
-                    <form method="post" style="display:inline;">
-                        <button type="submit" name="remove" value="<?= $code ?>">Supprimer</button>
-                    </form>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
-    <a href="index.php">Retour à la recherche</a>
+
+<h1>Votre Panier</h1>
+
+<?php if (empty($panier)): ?>
+    <p>Votre panier est vide.</p>
+<?php else: ?>
+    <ul>
+        <?php foreach ($panier as $code => $nom): ?>
+            <li><?= htmlspecialchars($nom) ?> 
+                <button onclick="removeLivre('<?= $code ?>')">Supprimer</button>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+<?php endif; ?>
+
+<a href="index.php">Retour à la recherche</a>
+
 </body>
 </html>
+
