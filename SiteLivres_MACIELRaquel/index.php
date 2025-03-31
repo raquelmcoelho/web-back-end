@@ -37,33 +37,17 @@
 
     <section id="menu">
         <?php if (isset($_SESSION['nom'])): ?>
-        <h5>Bienvenue <?php echo $_SESSION['nom'] ?> <?php echo $_SESSION['prenom'] ?></h5>
+            <h5>Bienvenue <?php echo $_SESSION['nom'] ?> <?php echo $_SESSION['prenom'] ?></h5>
+            <button type="button" onclick="montrer_panier()">Voir le Panier</button>
+            <button type="button" onclick="deconnecter()">Quitter</button>
         <?php else: ?>
             <button type="button" onclick="montrer_formulaire()">Inscription</button>
         <?php endif; ?>
-
-        <button type="button" onclick="montrer_panier()">Voir le Panier</button>
-        <button type="button" onclick="deconnecter()">Quitter</button>
     </section>
 
 </header>
 
 <div id="panier-div" style="display:none;">
-    <h1>Votre Panier</h1>
-
-    <?php if (empty($panier)): ?>
-        <p>Votre panier est vide.</p>
-    <?php else: ?>
-        <ul>
-            <?php foreach ($panier as $code => $nom): ?>
-                <li><?= htmlspecialchars($nom) ?> 
-                    <button onclick="remove_livre('<?= $code ?>')">Supprimer</button>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
-
-    <button type="button" onclick="montrer_recherche()">Retour à la recherche</button>
 </div>
 
 <div id="search-div">

@@ -57,12 +57,12 @@ function affiche_ouvrages(ouvrages) {
   ouvrages.forEach((ouvrage) => {
     console.log(ouvrage);
     divDroite.innerHTML += `<li>${ouvrage.nom}<ul id="ul-${ouvrage.code}"></ul></li>`;
-    affiche_exemplaires(ouvrage.code, ouvrage.nom, ouvrage.exemplaires);
+    affiche_exemplaires(ouvrage.code, ouvrage.exemplaires);
   });
   divDroite.innerHTML += "</ol>";
 }
 
-function affiche_exemplaires(ouvrageCode, ouvrageNom, exemplaires) {
+function affiche_exemplaires(ouvrageCode, exemplaires) {
   let ul = ById(`ul-${ouvrageCode}`);
   exemplaires = JSON.parse(exemplaires);
   if (exemplaires.length === 0) {
@@ -76,8 +76,10 @@ function affiche_exemplaires(ouvrageCode, ouvrageNom, exemplaires) {
     ul.innerHTML = `<li>Code: ${exemplaire.code}`;
     if (exemplaire.prix !== null) {
       ul.innerHTML += `Prix: ${exemplaire.prix} euros`;
-      let encodedNom = btoa(unescape(encodeURIComponent(ouvrageNom)));
-      ul.innerHTML += `<button onclick='ajouter_panier(${ouvrageCode}, "${encodedNom}")'> 🛒 Ajouter </button>`;
+      ul.innerHTML += `<button onclick='ajouter_panier(${exemplaire.code})'> 🛒 Ajouter </button>`;
+    } else {
+      // TODO: decorar
+      ul.innerHTML += `Produit Indisponible`;
     }
     ul.innerHTML += `</li>`;
   });
@@ -94,12 +96,11 @@ function recherche_ouvrages_auteur(code) {
   xhr.send();
 }
 
-function ajouter_panier(code_ouvrage, encoded_nom_ouvrage) {
+function ajouter_panier(code_exemplaire) {
   fetch("panier.php?action=add", {
     method: "POST",
     body: new URLSearchParams({
-      code_ouvrage,
-      nom_ouvrage: encoded_nom_ouvrage,
+      code_exemplaire
     }),
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
   })
@@ -108,22 +109,43 @@ function ajouter_panier(code_ouvrage, encoded_nom_ouvrage) {
     .catch((error) => console.error("Erreur:", error));
 }
 
-function remove_livre(code_ouvrage) {
+function remove_livre(code_exemplaire) {
   fetch("panier.php?action=remove", {
     method: "POST",
-    body: new URLSearchParams({ code_ouvrage }),
+    body: new URLSearchParams({ code_exemplaire }),
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
   })
     .then((response) => response.json())
     .then((data) => {
       alert(data.message);
-      location.reload();
+      recharger_panier();
     })
     .catch((error) => console.error("Erreur:", error));
 }
 
+function recharger_panier() {
+  // TODO: change to Ajax
+  fetch("get_panier.php")
+  .then(response => response.json())
+  .then(panier => {
+      let panierDiv = document.getElementById("panier-div");
+      if (panier.length === 0) {
+          panierDiv.innerHTML = "<p>Votre panier est vide.</p>";
+      } else {
+          let html = " <h1>Votre Panier</h1><ul>";
+          panier.forEach(item => {
+              html += `<li>${item.titre} (Quantité: ${item.quantite}) (Prix: <?= htmlspecialchars(${item.prix}) ?> €)
+                       <button onclick="remove_livre(${item.code_exemplaire})">Supprimer</button></li>`;
+          });
+          html += "</ul> <button type='button' onclick='montrer_recherche()'>Retour à la recherche</button>";
+          panierDiv.innerHTML = html;
+      }
+  })
+  .catch(error => console.error("Erreur:", error));
+}
 
 function montrer_panier() {
+  recharger_panier();
   document.getElementById("form-div").style.display = "none";
   document.getElementById("search-div").style.display = "none";
   document.getElementById("panier-div").style.display = "block";
@@ -168,5 +190,5 @@ function enregistrement() {
 }
 
 function deconnecter() {
-
+  // TODO: sauvegarder panier
 }
