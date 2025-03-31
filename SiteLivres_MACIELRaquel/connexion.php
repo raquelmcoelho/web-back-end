@@ -1,5 +1,5 @@
 <?php
-    global $connexion;   // variable globale
+    global $connexion;
     try{
         $connexion = new PDO("pgsql:host=localhost;dbname=livres", "postgres", "");
         $connexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
