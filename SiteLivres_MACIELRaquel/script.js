@@ -134,12 +134,14 @@ function recharger_panier() {
       } else {
           let html = " <h1>Votre Panier</h1><ul>";
           panier.forEach(item => {
-              html += `<li>${item.titre} (Quantité: ${item.quantite}) (Prix: <?= htmlspecialchars(${item.prix}) ?> €)
+              html += `<li>${item.nom} - ${item.editeur} (Quantité: ${item.quantite}) (Prix: <?= htmlspecialchars(${item.prix}) ?> €)
                        <button onclick="remove_livre(${item.code_exemplaire})">Supprimer</button></li>`;
           });
-          html += "</ul> <button type='button' onclick='montrer_recherche()'>Retour à la recherche</button>";
+          html += "</ul>";
           panierDiv.innerHTML = html;
       }
+
+      panierDiv.innerHTML += "<button type='button' onclick='montrer_recherche()'>Retour à la recherche</button>";
   })
   .catch(error => console.error("Erreur:", error));
 }
