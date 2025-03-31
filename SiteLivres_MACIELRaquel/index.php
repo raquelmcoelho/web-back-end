@@ -14,7 +14,6 @@
     }
 ?>
 
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -40,14 +39,32 @@
         <?php if (isset($_SESSION['nom'])): ?>
         <h5>Bienvenue <?php echo $_SESSION['nom'] ?> <?php echo $_SESSION['prenom'] ?></h5>
         <?php else: ?>
-            <a href="#" onclick="show_form()">Inscription</a>
+            <button type="button" onclick="montrer_formulaire()">Inscription</button>
         <?php endif; ?>
 
-        <a href="panier.php?"><h5>Voir le Panier</h5></a>
-        <h5>Quitter</h5>
+        <button type="button" onclick="montrer_panier()">Voir le Panier</button>
+        <button type="button" onclick="deconnecter()">Quitter</button>
     </section>
 
 </header>
+
+<div id="panier-div" style="display:none;">
+    <h1>Votre Panier</h1>
+
+    <?php if (empty($panier)): ?>
+        <p>Votre panier est vide.</p>
+    <?php else: ?>
+        <ul>
+            <?php foreach ($panier as $code => $nom): ?>
+                <li><?= htmlspecialchars($nom) ?> 
+                    <button onclick="remove_livre('<?= $code ?>')">Supprimer</button>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+
+    <button type="button" onclick="montrer_recherche()">Retour à la recherche</button>
+</div>
 
 <div id="search-div">
     <nav>
@@ -78,7 +95,7 @@
             <label>Ville:</label> <input type="text" id="ville" required><br>
             <label>Pays:</label> <input type="text" id="pays" required><br>
             <button type="submit">S'inscrire</button>
-            <button type="button" onclick="hide_form()">Annuler</button>
+            <button type="button" onclick="montrer_recherche()">Annuler</button>
         </form>
         <div id="messageErreur"></div>
     </section>

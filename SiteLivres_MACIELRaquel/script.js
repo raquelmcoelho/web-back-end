@@ -77,7 +77,7 @@ function affiche_exemplaires(ouvrageCode, ouvrageNom, exemplaires) {
     if (exemplaire.prix !== null) {
       ul.innerHTML += `Prix: ${exemplaire.prix} euros`;
       let encodedNom = btoa(unescape(encodeURIComponent(ouvrageNom)));
-      ul.innerHTML += `<button onclick='addToCart(${ouvrageCode}, "${encodedNom}")'> 🛒 Ajouter </button>`;
+      ul.innerHTML += `<button onclick='ajouter_panier(${ouvrageCode}, "${encodedNom}")'> 🛒 Ajouter </button>`;
     }
     ul.innerHTML += `</li>`;
   });
@@ -94,7 +94,7 @@ function recherche_ouvrages_auteur(code) {
   xhr.send();
 }
 
-function addToCart(code_ouvrage, encoded_nom_ouvrage) {
+function ajouter_panier(code_ouvrage, encoded_nom_ouvrage) {
   fetch("panier.php?action=add", {
     method: "POST",
     body: new URLSearchParams({
@@ -108,7 +108,7 @@ function addToCart(code_ouvrage, encoded_nom_ouvrage) {
     .catch((error) => console.error("Erreur:", error));
 }
 
-function removeLivre(code_ouvrage) {
+function remove_livre(code_ouvrage) {
   fetch("panier.php?action=remove", {
     method: "POST",
     body: new URLSearchParams({ code_ouvrage }),
@@ -123,14 +123,22 @@ function removeLivre(code_ouvrage) {
 }
 
 
-function hide_form() {
-  document.getElementById("formdiv").style.display = "none";
-  document.getElementById("search-div").style.display = "block";
+function montrer_panier() {
+  document.getElementById("form-div").style.display = "none";
+  document.getElementById("search-div").style.display = "none";
+  document.getElementById("panier-div").style.display = "block";
 }
 
-function show_form() {
+function montrer_recherche() {
+  document.getElementById("form-div").style.display = "none";
+  document.getElementById("search-div").style.display = "block";
+  document.getElementById("panier-div").style.display = "none";
+}
+
+function montrer_formulaire() {
   document.getElementById("form-div").style.display = "block";
   document.getElementById("search-div").style.display = "none";
+  document.getElementById("panier-div").style.display = "none";
 }
 
 function enregistrement() {
@@ -151,10 +159,14 @@ function enregistrement() {
                 document.cookie = `code_client=${data.code_client}; expires=Fri, 31 Dec 2050 23:59:59 GMT; path=/`;
                 alert("Inscription réussie !");
                 window.location.href = "index.php";
-                hide_form();
+                montrer_recherche();
             } else {
                 $("#messageErreur").html(`<p style="color:red;">${data.message}</p>`);
             }
         }
     });
+}
+
+function deconnecter() {
+
 }
