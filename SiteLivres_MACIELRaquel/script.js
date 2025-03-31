@@ -121,3 +121,30 @@ function removeLivre(code_ouvrage) {
     })
     .catch((error) => console.error("Erreur:", error));
 }
+
+
+function enregistrement() {
+  let nom = document.getElementById("nom").value;
+  let prenom = document.getElementById("prenom").value;
+  let adresse = document.getElementById("adresse").value;
+  let code_postal = document.getElementById("code_postal").value;
+  let ville = document.getElementById("ville").value;
+  let pays = document.getElementById("pays").value;
+
+  fetch('inscription.php', {
+      method: 'POST',
+      body: new URLSearchParams({ nom, prenom, adresse, code_postal, ville, pays }),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (data.success) {
+          alert("Inscription réussie !");
+          window.location.href = "index.php";
+      } else {
+          alert(data.message);
+          // TODO: add error dans le div du formulaire
+      }
+  })
+  .catch(error => console.error('Erreur:', error));
+}
