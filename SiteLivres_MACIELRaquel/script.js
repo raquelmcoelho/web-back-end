@@ -123,28 +123,38 @@ function removeLivre(code_ouvrage) {
 }
 
 
-function enregistrement() {
-  let nom = document.getElementById("nom").value;
-  let prenom = document.getElementById("prenom").value;
-  let adresse = document.getElementById("adresse").value;
-  let code_postal = document.getElementById("code_postal").value;
-  let ville = document.getElementById("ville").value;
-  let pays = document.getElementById("pays").value;
+function hide_form() {
+  document.getElementById("formdiv").style.display = "none";
+  document.getElementById("search-div").style.display = "block";
+}
 
-  fetch('inscription.php', {
-      method: 'POST',
-      body: new URLSearchParams({ nom, prenom, adresse, code_postal, ville, pays }),
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-  })
-  .then(response => response.json())
-  .then(data => {
-      if (data.success) {
-          alert("Inscription réussie !");
-          window.location.href = "index.php";
-      } else {
-          alert(data.message);
-          // TODO: add error dans le div du formulaire
-      }
-  })
-  .catch(error => console.error('Erreur:', error));
+function show_form() {
+  document.getElementById("form-div").style.display = "block";
+  document.getElementById("search-div").style.display = "none";
+}
+
+function enregistrement() {
+    $.ajax({
+        type: "POST",
+        url: "inscription.php",
+        data: {
+            nom: $("#nom").val(),
+            prenom: $("#prenom").val(),
+            adresse: $("#adresse").val(),
+            code_postal: $("#code_postal").val(),
+            ville: $("#ville").val(),
+            pays: $("#pays").val()
+        },
+        dataType: "json",
+        success: function(data) {
+            if (data.success) {
+                document.cookie = `code_client=${data.code_client}; expires=Fri, 31 Dec 2050 23:59:59 GMT; path=/`;
+                alert("Inscription réussie !");
+                window.location.href = "index.php";
+                hide_form();
+            } else {
+                $("#messageErreur").html(`<p style="color:red;">${data.message}</p>`);
+            }
+        }
+    });
 }

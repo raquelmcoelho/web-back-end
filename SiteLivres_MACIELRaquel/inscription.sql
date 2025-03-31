@@ -18,7 +18,7 @@ BEGIN
     END IF;
 
     INSERT INTO clients (nom, prenom, adresse, code_postal, ville, pays)
-    VALUES (p_nom, p_prenom, p_adresse, p_code_posta, p_ville, p_pays) 
+    VALUES (p_nom, p_prenom, p_adresse, p_code_postal, p_ville, p_pays) 
     RETURNING code_client INTO v_id;
 
     RETURN v_id;

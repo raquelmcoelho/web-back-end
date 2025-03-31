@@ -15,7 +15,7 @@ if (empty($nom) || empty($prenom) || empty($adresse) || empty($code_postal) || e
 
 include "connexion.php" ;
 
-$req_inscription="SELECT inscrire_client(:nom, :prenom, :adresse :code_postal :ville :pays)";
+$req_inscription="SELECT inscrire_client(:nom, :prenom, :adresse, :code_postal, :ville, :pays)";
 try {
     $res_inscription = $connexion->prepare($req_inscription);
     $res_inscription->execute([
@@ -26,7 +26,7 @@ try {
         'ville' => $ville, 
         'pays' => $pays
     ]);
-    $code_client = $res_inscription->fetchColumn(PDO::FETCH_ASSOC);
+    $code_client = $res_inscription->fetchColumn();
 } catch (PDOException $e) {
     die('Erreur : ' . $e→getMessage()) ;
 }
