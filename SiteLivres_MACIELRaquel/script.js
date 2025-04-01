@@ -226,6 +226,7 @@ function enregistrement() {
             if (data.success) {
                 document.cookie = `code_client=${data.code_client}; expires=Fri, 31 Dec 2050 23:59:59 GMT; path=/`;
                 alert("Inscription réussie !");
+                location.reload();
                 montrer_recherche();
             } else {
                 $("#message-erreur").html(`<p style="color:red;">${data.message}</p>`);
@@ -235,7 +236,11 @@ function enregistrement() {
 }
 
 function deconnecter() {
-  // TODO: sauvegarder panier
-  // TODO: effacer cookie?
-  
+  $.ajax({
+    type: "GET",
+    url: "php/deconnexion.php",
+    success: function(data) {
+      location.reload();
+    }
+  });
 }
