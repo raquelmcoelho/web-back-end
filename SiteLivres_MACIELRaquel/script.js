@@ -1,29 +1,29 @@
-function ById(id) {
+function by_id(id) {
   return document.getElementById(id);
 }
 
 function recherche_auteurs() {
-  let debnom = ById("debnom").value;
+  let debnom = by_id("debnom").value;
   if(debnom == "") {
     affiche_auteurs([]);
     return null;
-}
-  let xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-      affiche_auteurs(JSON.parse(xhr.responseText));
+  }
+
+  $.ajax({
+    type: "GET",
+    url: "php/recherche.php?type=auteurs&key=" + encodeURIComponent(debnom),
+    dataType: "json",
+    success: function (data) {
+      affiche_auteurs(data);
+    },
+    error: function (xhr, status, error) {
+      console.error("Erreur:", error);
     }
-  };
-  xhr.open(
-    "GET",
-    "php/recherche.php?type=auteurs&key=" + encodeURIComponent(debnom),
-    true
-  );
-  xhr.send(null);
+  });
 }
 
 function affiche_auteurs(auteurs) {
-  let divGauche = ById("div-gauche");
+  let divGauche = by_id("div-gauche");
   divGauche.innerHTML = "<ol>";
   auteurs.forEach((auteur) => {
     divGauche.innerHTML += `<li><a href="#" onclick="recherche_ouvrages_auteur(${auteur.code})">${auteur.nom} ${auteur.prenom}</a></li>`;
@@ -32,27 +32,27 @@ function affiche_auteurs(auteurs) {
 }
 
 function recherche_ouvrages_titre() {
-  let debtitre = ById("debtitre").value;
+  let debtitre = by_id("debtitre").value;
   if(!debtitre) {
     affiche_ouvrages([]);
     return null;
   }
-  let xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-      affiche_ouvrages(JSON.parse(xhr.responseText));
+
+  $.ajax({
+    type: "GET",
+    url: "php/recherche.php?type=ouvrages_titre&key=" + encodeURIComponent(debtitre),
+    dataType: "json",
+    success: function (data) {
+      affiche_ouvrages(data);
+    },
+    error: function (xhr, status, error) {
+      console.error("Erreur:", error);
     }
-  };
-  xhr.open(
-    "GET",
-    "php/recherche.php?type=ouvrages_titre&key=" + encodeURIComponent(debtitre),
-    true
-  );
-  xhr.send();
+  });
 }
 
 function affiche_ouvrages(ouvrages) {
-  let divDroite = ById("div-droite");
+  let divDroite = by_id("div-droite");
   divDroite.innerHTML = "<ol>";
   ouvrages.forEach((ouvrage) => {
     divDroite.innerHTML += `<li>${ouvrage.nom}<ul id="ul-${ouvrage.code}"></ul></li>`;
@@ -62,7 +62,7 @@ function affiche_ouvrages(ouvrages) {
 }
 
 function affiche_exemplaires(ouvrageCode, exemplaires) {
-  let ul = ById(`ul-${ouvrageCode}`);
+  let ul = by_id(`ul-${ouvrageCode}`);
   exemplaires = JSON.parse(exemplaires);
   if (exemplaires.length === 0) {
     ul.innerHTML += `<li>Aucun exemplaire disponible</li>`;
@@ -84,83 +84,100 @@ function affiche_exemplaires(ouvrageCode, exemplaires) {
 }
 
 function recherche_ouvrages_auteur(code) {
-  let xhr = new XMLHttpRequest();
-  xhr.open("GET", "php/recherche.php?type=ouvrages_auteur&key=" + code, true);
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-      affiche_ouvrages(JSON.parse(xhr.responseText));
+  $.ajax({
+    type: "GET",
+    url: "php/recherche.php?type=ouvrages_auteur&key=" + code,
+    dataType: "json",
+    success: function (data) {
+      affiche_ouvrages(data);
+    },
+    error: function (xhr, status, error) {
+      console.error("Erreur:", error);
     }
-  };
-  xhr.send();
+  });
 }
 
 function ajouter_panier(code_exemplaire) {
-  fetch("php/panier.php?action=ajouter", {
-    method: "POST",
-    body: new URLSearchParams({
-      code_exemplaire
-    }),
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  })
-    .then((response) => response.json())
-    .then((data) => alert(data.message))
-    .catch((error) => console.error("Erreur:", error));
+  $.ajax({
+    type: 'POST',
+    url: 'php/panier.php?action=ajouter',
+    data: { code_exemplaire },
+    dataType: 'json',
+    success: function(data) {
+      alert(data.message);
+      mise_a_jour_panier();
+    },
+    error: function(xhr, status, error) {
+      console.error("Erreur:", error);
+    }
+  });
 }
 
 function retirer_livre(code_exemplaire) {
-  fetch("php/panier.php?action=retirer", {
-    method: "POST",
-    body: new URLSearchParams({ code_exemplaire }),
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  })
-    .then((response) => response.json())
-    .then((data) => {
+  $.ajax({
+    type: "POST",
+    url: "php/panier.php?action=retirer",
+    data: { code_exemplaire },
+    dataType: "json",
+    success: function (data) {
       alert(data.message);
-      recuperer_panier();
-    })
-    .catch((error) => console.error("Erreur:", error));
+      mise_a_jour_panier();
+    },
+    error: function (xhr, status, error) {
+      console.error("Erreur:", error);
+    }
+  });
 }
 
 function vider_panier() {
-  fetch("php/panier.php?action=vider", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  })
-    .then((response) => response.json())
-    .then((data) => {
+  $.ajax({
+    type: "POST",
+    url: "php/panier.php?action=vider",
+    success: function (data) {
       alert(data.message);
-      recuperer_panier();
-    })
-    .catch((error) => console.error("Erreur:", error));
+      mise_a_jour_panier();
+    },
+    error: function (xhr, status, error) {
+      console.error("Erreur:", error);
+    }
+  });
 }
 
-function recuperer_panier() {
-  // TODO: change to Ajax
-  fetch("php/panier.php?action=recuperer")
-  .then(response => response.json())
-  .then(panier => {
-      let panierDiv = document.getElementById("panier-div");
-      if (panier.length === 0) {
-          panierDiv.innerHTML = "<p>Votre panier est vide.</p>";
-      } else {
-          let html = " <h1>Votre Panier</h1><ul>";
-          let prix = 0.0;
+function mise_a_jour_panier() {
+  $.ajax({
+    type: "GET",
+    url: "php/panier.php?action=recuperer",
+    dataType: "json",
+    success: function (data) {
+        afficher_panier(data);
+    },
+    error: function (xhr, status, error) {
+      console.error("Erreur:", error);
+    }
+  });
+}
 
-          panier.forEach(item => {
-              prix += parseFloat(item.prix);
-              html += `<li>${item.nom} - ${item.editeur} (Quantité: ${item.quantite}) (Prix: <?= htmlspecialchars(${item.prix}) ?> €)
-                       <button onclick="retirer_livre(${item.code_exemplaire})">Supprimer</button></li>`;
-          });
+function afficher_panier(panier) {
+  let panierDiv = document.getElementById("panier-div");
+  if (panier.length === 0) {
+      panierDiv.innerHTML = "<p>Votre panier est vide.</p>";
+  } else {
+      let html = " <h1>Votre Panier</h1><ul>";
+      let prix = 0.0;
 
-          html += `<li><strong>Total: ${prix.toFixed(2)} €</strong></li>`;
-          html += "</ul>";
-          panierDiv.innerHTML = html;
-      }
+      panier.forEach(item => {
+          prix += parseFloat(item.prix);
+          html += `<li>${item.nom} - ${item.editeur} (Quantité: ${item.quantite}) (Prix: <?= htmlspecialchars(${item.prix}) ?> €)
+                   <button onclick="retirer_livre(${item.code_exemplaire})">Supprimer</button></li>`;
+      });
 
-      panierDiv.innerHTML += "<button type='button' onclick='montrer_recherche()'>Fermer</button>";
-      panierDiv.innerHTML += `<button type='button' onclick='commander()'>Commander</button>`;
-  })
-  .catch(error => console.error("Erreur:", error));
+      html += `<li><strong>Total: ${prix.toFixed(2)} €</strong></li>`;
+      html += "</ul>";
+      panierDiv.innerHTML = html;
+  }
+
+  panierDiv.innerHTML += "<button type='button' onclick='montrer_recherche()'>Fermer</button>";
+  panierDiv.innerHTML += `<button type='button' onclick='commander()'>Commander</button>`;
 }
 
 // source: https://stackoverflow.com/questions/10730362/get-cookie-by-name
@@ -173,17 +190,19 @@ function get_cookie(name) {
 function commander() {
   let code_client = get_cookie("code_client");
   if (code_client) {
-    fetch("php/panier.php?action=commander", {
-      method: "POST",
-      body: new URLSearchParams({ code_client }),
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    })
-      .then((response) => response.json())
-      .then((data) => {
+    $.ajax({
+      type: "POST",
+      url: "php/panier.php?action=commander",
+      data: { code_client },
+      dataType: "json",
+      success: function (data) {
         alert(data.message);
-        recuperer_panier();
-      })
-      .catch((error) => console.error("Erreur:", error));
+        mise_a_jour_panier();
+      },
+      error: function (xhr, status, error) {
+        console.error("Erreur:", error);
+      }
+    });
   } else {
     alert("Vous devez vous inscrire pour commander.");
     montrer_formulaire();
@@ -191,7 +210,7 @@ function commander() {
 }
 
 function montrer_panier() {
-  recuperer_panier();
+  mise_a_jour_panier();
   document.getElementById("form-div").style.display = "none";
   document.getElementById("search-div").style.display = "none";
   document.getElementById("panier-div").style.display = "block";
