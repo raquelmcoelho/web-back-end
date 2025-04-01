@@ -55,7 +55,6 @@ function affiche_ouvrages(ouvrages) {
   let divDroite = ById("div-droite");
   divDroite.innerHTML = "<ol>";
   ouvrages.forEach((ouvrage) => {
-    console.log(ouvrage);
     divDroite.innerHTML += `<li>${ouvrage.nom}<ul id="ul-${ouvrage.code}"></ul></li>`;
     affiche_exemplaires(ouvrage.code, ouvrage.exemplaires);
   });
@@ -72,7 +71,6 @@ function affiche_exemplaires(ouvrageCode, exemplaires) {
     ul.innerHTML += `<li>Exemplaires disponibles:</li>`;
   }
   exemplaires.forEach((exemplaire) => {
-    console.log(exemplaire);
     ul.innerHTML = `<li>Code: ${exemplaire.code}`;
     if (exemplaire.prix !== null) {
       ul.innerHTML += `Prix: ${exemplaire.prix} euros`;
@@ -97,7 +95,7 @@ function recherche_ouvrages_auteur(code) {
 }
 
 function ajouter_panier(code_exemplaire) {
-  fetch("panier.php?action=add", {
+  fetch("panier.php?action=ajouter", {
     method: "POST",
     body: new URLSearchParams({
       code_exemplaire
@@ -109,8 +107,8 @@ function ajouter_panier(code_exemplaire) {
     .catch((error) => console.error("Erreur:", error));
 }
 
-function remove_livre(code_exemplaire) {
-  fetch("panier.php?action=remove", {
+function retirer_livre(code_exemplaire) {
+  fetch("panier.php?action=retirer", {
     method: "POST",
     body: new URLSearchParams({ code_exemplaire }),
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -118,14 +116,27 @@ function remove_livre(code_exemplaire) {
     .then((response) => response.json())
     .then((data) => {
       alert(data.message);
-      recharger_panier();
+      recuperer_panier();
     })
     .catch((error) => console.error("Erreur:", error));
 }
 
-function recharger_panier() {
+function vider_panier() {
+  fetch("panier.php?action=vider", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      alert(data.message);
+      recuperer_panier();
+    })
+    .catch((error) => console.error("Erreur:", error));
+}
+
+function recuperer_panier() {
   // TODO: change to Ajax
-  fetch("panier.php?action=afficher")
+  fetch("panier.php?action=recuperer")
   .then(response => response.json())
   .then(panier => {
       let panierDiv = document.getElementById("panier-div");
@@ -134,11 +145,11 @@ function recharger_panier() {
       } else {
           let html = " <h1>Votre Panier</h1><ul>";
           let prix = 0.0;
-          
+
           panier.forEach(item => {
               prix += parseFloat(item.prix);
               html += `<li>${item.nom} - ${item.editeur} (Quantité: ${item.quantite}) (Prix: <?= htmlspecialchars(${item.prix}) ?> €)
-                       <button onclick="remove_livre(${item.code_exemplaire})">Supprimer</button></li>`;
+                       <button onclick="retirer_livre(${item.code_exemplaire})">Supprimer</button></li>`;
           });
 
           html += `<li><strong>Total: ${prix.toFixed(2)} €</strong></li>`;
@@ -170,7 +181,7 @@ function commander() {
       .then((response) => response.json())
       .then((data) => {
         alert(data.message);
-        recharger_panier();
+        recuperer_panier();
       })
       .catch((error) => console.error("Erreur:", error));
   } else {
@@ -180,7 +191,7 @@ function commander() {
 }
 
 function montrer_panier() {
-  recharger_panier();
+  recuperer_panier();
   document.getElementById("form-div").style.display = "none";
   document.getElementById("search-div").style.display = "none";
   document.getElementById("panier-div").style.display = "block";

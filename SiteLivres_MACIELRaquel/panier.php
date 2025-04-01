@@ -6,100 +6,121 @@ $code_client = $_SESSION['code_client'] ?? null;
 $code_exemplaire = $_POST['code_exemplaire'] ?? null;
 $action = $_GET['action'] ?? null;
 
-if (!$code_client || !$action || !$code_exemplaire && ($action == 'add' || $action == 'remove')) {
+if (
+    !$code_client 
+    || !$action 
+    || !$code_exemplaire && ($action == 'ajouter' || $action == 'retirer')
+) {
     echo json_encode(["message" => "Erreur: client, code ou action invalide"]);
     exit;
 }
 
-if ($action === 'add') {
-    // Verifica se o item já está no carrinho
-    $req = $connexion->prepare("
-    SELECT quantite FROM panier WHERE code_client = :code_client AND code_exemplaire = :code_exemplaire
-    ");
+function ajouter() {
+    global $connexion, $code_client, $code_exemplaire;
+    $req = $connexion->prepare("SELECT quantite 
+                                FROM panier 
+                                WHERE code_client = :code_client 
+                                AND code_exemplaire = :code_exemplaire");
     $req->execute(['code_client' => $code_client, 'code_exemplaire' => $code_exemplaire]);
     $existe = $req->fetch(PDO::FETCH_ASSOC);
 
     if ($existe) {
-    // Atualiza a quantidade
-    $req = $connexion->prepare("
-        UPDATE panier SET quantite = quantite + 1 
-        WHERE code_client = :code_client AND code_exemplaire = :code_exemplaire
-    ");
+        $req = $connexion->prepare("UPDATE panier SET quantite = quantite + 1 
+                                    WHERE code_client = :code_client 
+                                    AND code_exemplaire = :code_exemplaire");
     } else {
-    // Adiciona um novo item
-    $req = $connexion->prepare("
-        INSERT INTO panier (code_client, code_exemplaire, quantite) 
-        VALUES (:code_client, :code_exemplaire, 1)
-    ");
+        $req = $connexion->prepare("INSERT INTO panier (code_client, code_exemplaire, quantite) 
+                                    VALUES (:code_client, :code_exemplaire, 1)");
     }
 
     $req->execute(['code_client' => $code_client, 'code_exemplaire' => $code_exemplaire]);
-
-    echo json_encode(["message" => "Livre ajouté au panier"]);
-    exit;
 }
 
-if ($action === 'remove') {
-    $req = $connexion->prepare("
-        DELETE FROM panier WHERE code_client = :code_client AND code_exemplaire = :code_exemplaire
-    ");
+function retirer() {
+    global $connexion, $code_client, $code_exemplaire;
+    $req = $connexion->prepare("DELETE FROM panier 
+                                WHERE code_client = :code_client 
+                                AND code_exemplaire = :code_exemplaire");
     $req->execute(['code_client' => $code_client, 'code_exemplaire' => $code_exemplaire]);
-
-    echo json_encode(["message" => "Livre retiré du panier"]);
-    exit;
 }
 
 
-if($action === 'commander') {
-    // TODO loop
-    // $req = $connexion->prepare("
-    //     INSERT INTO commande (code_client, code_exemplaire, quantite, prix)
-    //     VALUES (
-    //     :code_client, 
-    //     :code_exemplaire, 
-    //     (SELECT quantite FROM panier WHERE code_client = :code_client AND code_exemplaire = :code_exemplaire),
-    //     (SELECT prix FROM exemplaires WHERE code_exemplaire = :code_exemplaire LIMIT 1) * quantite
-    //     );
-    //     DELETE FROM panier WHERE code_client = :code_client;
-    // ");
-    // $req->execute(['code_client' => $code_client]);
-
-    echo json_encode(["message" => "Commande passée avec succès"]);
-    exit;
+function commander() {
+    global $connexion, $code_client;
+    $req = $connexion->prepare("SELECT code_exemplaire, quantite, e.prix 
+                                FROM panier p 
+                                JOIN exemplaire e ON p.code_exemplaire = e.code 
+                                WHERE p.code_client = :code_client");
+    $req->execute(['code_client' => $code_client]);
+    $items = $req->fetchAll(PDO::FETCH_ASSOC);
+    
+    $req = $connexion->prepare("INSERT INTO commande (code_client, code_exemplaire, quantite, prix) 
+                                VALUES (:code_client, :code_exemplaire, :quantite, :prix)");
+    
+    foreach ($items as $item) {
+        $req->execute([
+            'code_client' => $code_client,
+            'code_exemplaire' => $item['code_exemplaire'],
+            'quantite' => $item['quantite'],
+            'prix' => $item['prix'],
+        ]);
+    }
 }
 
-// TODO vider panier
+function vider() {
+    global $connexion, $code_client;
+    $req = $connexion->prepare("DELETE FROM panier 
+                                WHERE code_client = :code_client");
+    $req->execute(['code_client' => $code_client]);
+}
 
-// if($action === 'vider') {
-//     $req = $connexion->prepare("
-//         DELETE FROM panier WHERE code_client = :code_client
-//     ");
-//     $req->execute(['code_client' => $code_client]);
-
-//     echo json_encode(["message" => "Panier vidé"]);
-//     exit;
-// }
-
-if($action === 'afficher') {
+function recuperer(){
+    global $connexion, $code_client;
     $panier = [];
+    
+    $req = $connexion->prepare("SELECT o.nom, ed.nom as editeur, p.code_exemplaire, p.quantite, e.prix
+                                FROM panier p
+                                JOIN exemplaire e ON p.code_exemplaire = e.code
+                                JOIN ouvrage o ON o.code = e.code_ouvrage
+                                JOIN editeurs ed ON ed.code = e.code_editeur
+                                WHERE p.code_client = :code_client");
+    $req->execute(['code_client' => $code_client]);
+    $panier = $req->fetchAll(PDO::FETCH_ASSOC);
 
-    if ($code_client) {
-        $req = $connexion->prepare("
-            SELECT o.nom, ed.nom as editeur, p.code_exemplaire, p.quantite, e.prix
-            FROM panier p
-            JOIN exemplaire e ON p.code_exemplaire = e.code
-            JOIN ouvrage o ON o.code = e.code_ouvrage
-            JOIN editeurs ed ON ed.code = e.code_editeur
-            WHERE p.code_client = :code_client
-        ");
-        $req->execute(['code_client' => $code_client]);
-        $panier = $req->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    echo json_encode($panier);
-    exit;
+    return $panier;
 }
 
+header("Content-type: application/json; charset=utf-8");
+switch ($action) {
+    case "ajouter":
+        ajouter();
+        echo json_encode(["message" => "Livre ajouté au panier"]);
+        exit;
+        break;
+    case "retirer":
+        retirer();
+        echo json_encode(["message" => "Livre retiré du panier"]);
+        exit;
+        break;
+    case "vider":
+        vider();
+        echo json_encode(["message" => "Panier vidé"]);
+        exit;
+        break;
+    case "commander":
+        commander();
+        vider();
+        echo json_encode(["message" => "Commande passée avec succès"]);
+        exit;
+        break;
+    case "recuperer":
+        $panier = recuperer();
+        echo json_encode($panier);
+        exit;
+        break;
+    default:
+        break;
+}
 
 ?>
 
