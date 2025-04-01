@@ -26,18 +26,21 @@
 </head>
 <body>
 
-<header>
-    <section id="number_of_visitors">
-        <h5>Nombre de visiteurs:                                                                                                                                                                                                                                 <?php echo $counter; ?></h5>
-    </section>
-
-    <section id="title">
-        <h1>Bibliothèque Virtuelle</h1>
+<header> 
+    <section id="logo-section">
+        <img id="logo" src="logo.png" alt="Logo de la Bibliothèque Virtuelle">
+        <section id="title">
+            <h1> Bibliothèque Virtuelle</h1>
+            <h5> (<?php echo $counter; ?> Visiteurs) </h5>
+        </section>
     </section>
 
     <section id="menu">
         <?php if (isset($_SESSION['nom'])): ?>
-            <h5>Bienvenue <?php echo $_SESSION['nom'] ?> <?php echo $_SESSION['prenom'] ?></h5>
+            <h2>Bienvenue <?php echo $_SESSION['nom'] ?>, <?php echo $_SESSION['prenom'] ?>. </h2>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['nom'])): ?>
             <button type="button" onclick="montrer_panier()">Voir le Panier</button>
             <button type="button" onclick="vider_panier()">Vider le Panier</button>
             <button type="button" onclick="deconnecter()">Quitter</button>
@@ -53,34 +56,36 @@
 
 <div id="search-div">
     <nav>
-        Recherche :
-        <label for="debnom">Par Auteur:</label>
-        <input type="text" id="debnom" onkeyup="recherche_auteurs()">
-        <br>
-        <label for="debtitre">Par Titre:</label>
-        <input type="text" id="debtitre" onkeyup="recherche_ouvrages_titre()">
-        <br>
+        <div class="form-group">
+            <label for="debnom">Par Auteur:</label>
+            <input type="text" id="debnom" onkeyup="recherche_auteurs()">
+        </div>
+        <div class="form-group">
+            <label for="debtitre">Par Titre:</label>
+            <input type="text" id="debtitre" onkeyup="recherche_ouvrages_titre()">
+        </div>
     </nav>
 
     <section>
-        <p>Bienvenue sur le site de la bibliothèque virtuelle.</p>
         <div id="div-gauche"></div>
         <div id="div-droite"></div>
     </section>
 </div>
 
 <div id="form-div" style="display:none;">
-    <section>
+    <section id="formulaire">
         <h2>Inscription</h2>
         <form onsubmit="event.preventDefault(); enregistrement();">
-            <label>Nom:</label> <input type="text" id="nom" required><br>
-            <label>Prénom:</label> <input type="text" id="prenom" required><br>
-            <label>Adresse:</label> <input type="text" id="adresse" required><br>
-            <label>Code Postal:</label> <input type="text" id="code_postal" required><br>
-            <label>Ville:</label> <input type="text" id="ville" required><br>
-            <label>Pays:</label> <input type="text" id="pays" required><br>
-            <button type="submit">S'inscrire</button>
-            <button type="button" onclick="montrer_recherche()">Annuler</button>
+            <div class="form-group"><label>Nom:</label> <input type="text" id="nom" required><br></div>
+            <div class="form-group"><label>Prénom:</label> <input type="text" id="prenom" required><br></div>
+            <div class="form-group"><label>Adresse:</label> <input type="text" id="adresse" required><br></div>
+            <div class="form-group"><label>Code Postal:</label> <input type="text" id="code_postal" required><br></div>
+            <div class="form-group"><label>Ville:</label> <input type="text" id="ville" required><br></div>
+            <div class="form-group"><label>Pays:</label> <input type="text" id="pays" required><br></div>
+            <section id="buttons-formulaire">
+                <button class="cancel" type="button" onclick="montrer_recherche()">Annuler</button>
+                <button class="confirm" type="submit">S'inscrire</button>
+            </section>
         </form>
         <div id="message_erreur"></div>
     </section>

@@ -11,7 +11,7 @@ if (
     || !$action 
     || !$code_exemplaire && ($action == 'ajouter' || $action == 'retirer')
 ) {
-    echo json_encode(["message" => "Erreur: client, code ou action invalide"]);
+    echo json_encode(["success" => false, "message" => "Erreur: client, code ou action invalide"]);
     exit;
 }
 
@@ -94,28 +94,28 @@ header("Content-type: application/json; charset=utf-8");
 switch ($action) {
     case "ajouter":
         ajouter();
-        echo json_encode(["message" => "Livre ajouté au panier"]);
+        echo json_encode(["success" => true, "message" => "Livre ajouté au panier"]);
         exit;
         break;
     case "retirer":
         retirer();
-        echo json_encode(["message" => "Livre retiré du panier"]);
+        echo json_encode(["success" => true, "message" => "Livre retiré du panier"]);
         exit;
         break;
     case "vider":
         vider();
-        echo json_encode(["message" => "Panier vidé"]);
+        echo json_encode(["success" => true, "message" => "Panier vidé"]);
         exit;
         break;
     case "commander":
         commander();
         vider();
-        echo json_encode(["message" => "Commande passée avec succès"]);
+        echo json_encode(["success" => true, "message" => "Commande passée avec succès"]);
         exit;
         break;
     case "recuperer":
         $panier = recuperer();
-        echo json_encode($panier);
+        echo json_encode(["success" => true, "panier" => $panier]);
         exit;
         break;
     default:

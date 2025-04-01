@@ -1,7 +1,13 @@
+window.onload = function() {
+  affiche_auteurs([]);
+  affiche_ouvrages([]);
+  mise_a_jour_panier();
+  montrer_recherche();
+}
+
 function by_id(id) {
   return document.getElementById(id);
 }
-
 
 // Recherches
 function recherche_auteurs() {
@@ -60,69 +66,92 @@ function recherche_ouvrages_auteur(code) {
 // Affichage
 function affiche_auteurs(auteurs) {
   let divGauche = by_id("div-gauche");
-  divGauche.innerHTML = "<ol>";
+  let html = `<table class="table-class">
+                <thead>
+                  <tr><th>Auteur</th></tr>
+                </thead>
+                <tbody>`;
+  
   auteurs.forEach((auteur) => {
-    divGauche.innerHTML += `<li><a href="#" onclick="recherche_ouvrages_auteur(${auteur.code})">${auteur.nom} ${auteur.prenom}</a></li>`;
+    html += `<tr><td><a href="#" onclick="recherche_ouvrages_auteur(${auteur.code})">${auteur.nom} ${auteur.prenom}</a></td></tr>`;
   });
-  divGauche.innerHTML += "</ol>";
-}
 
+  html += `</tbody></table>`;
+  divGauche.innerHTML = html;
+}
 
 function affiche_ouvrages(ouvrages) {
   let divDroite = by_id("div-droite");
-  divDroite.innerHTML = "<ol>";
+  divDroite.innerHTML = `<table class="table-class">
+                <thead>
+                  <tr><th>Ouvrage</th></tr>
+                </thead>
+                <tbody>`;
+
   ouvrages.forEach((ouvrage) => {
-    divDroite.innerHTML += `<li>${ouvrage.nom}<ul id="ul-${ouvrage.code}"></ul></li>`;
+    divDroite.innerHTML += `<tr><td><h4>${ouvrage.nom}</h4></td></tr>
+             <tr><td><table class="sub-table" id="table-${ouvrage.code}"></table></td></tr>`;
     affiche_exemplaires(ouvrage.code, ouvrage.exemplaires);
   });
-  divDroite.innerHTML += "</ol>";
+
+  divDroite.innerHTML += `</tbody></table>`;
 }
 
 function affiche_exemplaires(ouvrageCode, exemplaires) {
-  let ul = by_id(`ul-${ouvrageCode}`);
+  let table = by_id(`table-${ouvrageCode}`);
   exemplaires = JSON.parse(exemplaires);
+  let html="";
+
   if (exemplaires.length === 0) {
-    ul.innerHTML += `<li>Aucun exemplaire disponible</li>`;
+    html += `<tr><td colspan="3">Aucun exemplaire disponible</td></tr>`;
+  } else {
+    exemplaires.forEach((exemplaire) => {
+      html += `<tr>
+                 <td>${exemplaire.editeur}</td>
+                 <td>${exemplaire.prix !== null ? `${exemplaire.prix} €` : "Indisponible"}</td>
+                 <td>${exemplaire.prix !== null ? `<button onclick='ajouter_livre(${exemplaire.code})'>🛒 Ajouter</button>` : ""}</td>
+               </tr>`;
+    });
   }
-  if (exemplaires.length > 0) {
-    ul.innerHTML += `<li>Exemplaires disponibles:</li>`;
-  }
-  exemplaires.forEach((exemplaire) => {
-    ul.innerHTML = `<li>Code: ${exemplaire.code}`;
-    if (exemplaire.prix !== null) {
-      ul.innerHTML += `Prix: ${exemplaire.prix} euros`;
-      ul.innerHTML += `<button onclick='ajouter_livre(${exemplaire.code})'> 🛒 Ajouter </button>`;
-    } else {
-      // TODO: decorar
-      ul.innerHTML += `Produit Indisponible`;
-    }
-    ul.innerHTML += `</li>`;
-  });
+
+  table.innerHTML = html;
 }
 
 function afficher_panier(panier) {
   let panierDiv = document.getElementById("panier-div");
+  let prixTotal = 0.0;
+
   if (panier.length === 0) {
-      panierDiv.innerHTML = "<p>Votre panier est vide.</p>";
+    panierDiv.innerHTML = "<p>Votre panier est vide.</p>";
   } else {
-      let html = " <h1>Votre Panier</h1><ul>";
-      let prix = 0.0;
+    let html = `<h1>Votre Panier</h1>
+                <table class="table-class">
+                  <thead>
+                    <tr><th>Nom</th><th>Éditeur</th><th>Quantité</th><th>Prix</th><th>Action</th></tr>
+                  </thead>
+                  <tbody>`;
 
-      panier.forEach(item => {
-          prix += parseFloat(item.prix);
-          html += `<li>${item.nom} - ${item.editeur} (Quantité: ${item.quantite}) (Prix: <?= htmlspecialchars(${item.prix}) ?> €)
-                   <button onclick="retirer_livre(${item.code_exemplaire})">Supprimer</button></li>`;
-      });
+    panier.forEach(item => {
+      prixTotal += parseFloat(item.prix);
+      html += `<tr>
+                 <td>${item.nom}</td>
+                 <td>${item.editeur}</td>
+                 <td>${item.quantite}</td>
+                 <td>${item.prix} €</td>
+                 <td><button class="cancel" onclick="retirer_livre(${item.code_exemplaire})">Supprimer</button></td>
+               </tr>`;
+    });
 
-      html += `<li><strong>Total: ${prix.toFixed(2)} €</strong></li>`;
-      html += "</ul>";
-      panierDiv.innerHTML = html;
+    html += `<tr><td colspan="3"><strong>Total</strong></td><td><strong>${prixTotal.toFixed(2)} €</strong></td><td></td></tr>`;
+    html += `</tbody></table>`;
+    
+    panierDiv.innerHTML = html;
   }
 
-  panierDiv.innerHTML += "<button type='button' onclick='montrer_recherche()'>Fermer</button>";
-  panierDiv.innerHTML += `<button type='button' onclick='commander()'>Commander</button>`;
+  panierDiv.innerHTML += `<br>`;
+  panierDiv.innerHTML += `<button class="cancel" type='button' onclick='montrer_recherche()'>Fermer</button>`;
+  panierDiv.innerHTML += `<button class="confirm" type='button' onclick='commander()'>Commander</button>`;
 }
-
 
 // Panier 
 function ajouter_livre(code_exemplaire) {
@@ -132,8 +161,13 @@ function ajouter_livre(code_exemplaire) {
     data: { code_exemplaire },
     dataType: 'json',
     success: function(data) {
-      alert(data.message);
-      mise_a_jour_panier();
+      if (data.success) {
+        alert(data.message);
+        mise_a_jour_panier();
+      } else {
+        alert("Il faut s'inscrire pour ajouter un livre au panier.");
+        montrer_formulaire();
+      }
     },
     error: function(xhr, status, error) {
       console.error("Erreur:", error);
@@ -148,8 +182,12 @@ function retirer_livre(code_exemplaire) {
     data: { code_exemplaire },
     dataType: "json",
     success: function (data) {
-      alert(data.message);
-      mise_a_jour_panier();
+      if (data.success) {
+        alert(data.message);
+        mise_a_jour_panier();
+      } else {
+        alert("Erreur lors de la suppression du livre du panier.");
+      }
     },
     error: function (xhr, status, error) {
       console.error("Erreur:", error);
@@ -162,8 +200,12 @@ function vider_panier() {
     type: "POST",
     url: "php/panier.php?action=vider",
     success: function (data) {
-      alert(data.message);
-      mise_a_jour_panier();
+      if (data.success) {
+        alert(data.message);
+        mise_a_jour_panier();
+      } else {
+        alert("Erreur lors de la vidange du panier.");
+      }
     },
     error: function (xhr, status, error) {
       console.error("Erreur:", error);
@@ -172,12 +214,21 @@ function vider_panier() {
 }
 
 function mise_a_jour_panier() {
+  let code_client = get_cookie("code_client");
+  if (!code_client) {
+    return;
+  }
+
   $.ajax({
     type: "GET",
     url: "php/panier.php?action=recuperer",
     dataType: "json",
     success: function (data) {
-        afficher_panier(data);
+      if (data.success) {
+        afficher_panier(data.panier);
+      } else {
+        alert("Erreur lors de la récupération du panier.");
+      }
     },
     error: function (xhr, status, error) {
       console.error("Erreur:", error);
@@ -238,6 +289,13 @@ function montrer_formulaire() {
 
 
 // Login / Logout
+// source: https://www.sitepoint.com/delay-sleep-pause-wait/
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+console.log('Hello');
+sleep(2000).then(() => { console.log('World!'); });
 function enregistrement() {
     $.ajax({
         type: "POST",
@@ -258,8 +316,11 @@ function enregistrement() {
                 location.reload();
                 montrer_recherche();
             } else {
-                $("#message-erreur").html(`<p style="color:red;">${data.message}</p>`);
-            }
+                $("#message_erreur").html(`<p style="color:red;">${data.message}</p>`);
+                sleep(2000).then(() => {
+                    $("#message_erreur").html("");
+                });
+            } 
         }
     });
 }

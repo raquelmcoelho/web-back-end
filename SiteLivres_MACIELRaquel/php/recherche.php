@@ -9,9 +9,10 @@ include "connexion.php" ;
 $req = "";
 function ouvrages_par_titre() {
     global $req, $key;
-    $req = "SELECT o.code, o.nom, json_agg(json_build_object('code', e.code, 'prix', e.prix)) as exemplaires 
+    $req = "SELECT o.code, o.nom, json_agg(json_build_object('code', e.code, 'prix', e.prix, 'editeur', ed.nom)) as exemplaires 
             FROM ouvrage o 
-            JOIN exemplaire e ON o.code = e.code_ouvrage 
+            JOIN exemplaire e ON o.code = e.code_ouvrage
+            JOIN editeurs ed ON ed.code = e.code_editeur
             WHERE o.nom ILIKE ?
             GROUP BY o.code, o.nom
             ORDER BY o.nom";
@@ -20,10 +21,11 @@ function ouvrages_par_titre() {
 
 function ouvrages_par_auteur() {
     global $req, $key;
-    $req = "SELECT o.code, o.nom, json_agg(json_build_object('code', e.code, 'prix', e.prix)) as exemplaires 
+    $req = "SELECT o.code, o.nom, json_agg(json_build_object('code', e.code, 'prix', e.prix, 'editeur', ed.nom )) as exemplaires 
             FROM ouvrage o 
             JOIN exemplaire e ON o.code = e.code_ouvrage 
             JOIN ecrit_par ec ON o.code = ec.code_ouvrage 
+            JOIN editeurs ed ON ed.code = e.code_editeur
             WHERE ec.code_auteur = ?
             GROUP BY o.code, o.nom";
 }
