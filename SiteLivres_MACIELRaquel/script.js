@@ -16,7 +16,7 @@ function recherche_auteurs() {
   };
   xhr.open(
     "GET",
-    "recherche_auteurs.php?debnom=" + encodeURIComponent(debnom),
+    "php/recherche.php?type=auteurs&key=" + encodeURIComponent(debnom),
     true
   );
   xhr.send(null);
@@ -45,7 +45,7 @@ function recherche_ouvrages_titre() {
   };
   xhr.open(
     "GET",
-    "recherche_ouvrages_titre.php?debtitre=" + encodeURIComponent(debtitre),
+    "php/recherche.php?type=ouvrages_titre&key=" + encodeURIComponent(debtitre),
     true
   );
   xhr.send();
@@ -85,7 +85,7 @@ function affiche_exemplaires(ouvrageCode, exemplaires) {
 
 function recherche_ouvrages_auteur(code) {
   let xhr = new XMLHttpRequest();
-  xhr.open("GET", "recherche_ouvrages_auteur.php?code=" + code, true);
+  xhr.open("GET", "php/recherche.php?type=ouvrages_auteur&key=" + code, true);
   xhr.onreadystatechange = function () {
     if (xhr.readyState == 4 && xhr.status == 200) {
       affiche_ouvrages(JSON.parse(xhr.responseText));
@@ -95,7 +95,7 @@ function recherche_ouvrages_auteur(code) {
 }
 
 function ajouter_panier(code_exemplaire) {
-  fetch("panier.php?action=ajouter", {
+  fetch("php/panier.php?action=ajouter", {
     method: "POST",
     body: new URLSearchParams({
       code_exemplaire
@@ -108,7 +108,7 @@ function ajouter_panier(code_exemplaire) {
 }
 
 function retirer_livre(code_exemplaire) {
-  fetch("panier.php?action=retirer", {
+  fetch("php/panier.php?action=retirer", {
     method: "POST",
     body: new URLSearchParams({ code_exemplaire }),
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -122,7 +122,7 @@ function retirer_livre(code_exemplaire) {
 }
 
 function vider_panier() {
-  fetch("panier.php?action=vider", {
+  fetch("php/panier.php?action=vider", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
   })
@@ -136,7 +136,7 @@ function vider_panier() {
 
 function recuperer_panier() {
   // TODO: change to Ajax
-  fetch("panier.php?action=recuperer")
+  fetch("php/panier.php?action=recuperer")
   .then(response => response.json())
   .then(panier => {
       let panierDiv = document.getElementById("panier-div");
@@ -164,16 +164,16 @@ function recuperer_panier() {
 }
 
 // source: https://stackoverflow.com/questions/10730362/get-cookie-by-name
-function getCookie(name) {
+function get_cookie(name) {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop().split(';').shift();
 }
 
 function commander() {
-  let code_client = getCookie("code_client");
+  let code_client = get_cookie("code_client");
   if (code_client) {
-    fetch("panier.php?action=commander", {
+    fetch("php/panier.php?action=commander", {
       method: "POST",
       body: new URLSearchParams({ code_client }),
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -212,7 +212,7 @@ function montrer_formulaire() {
 function enregistrement() {
     $.ajax({
         type: "POST",
-        url: "inscription.php",
+        url: "php/inscription.php",
         data: {
             nom: $("#nom").val(),
             prenom: $("#prenom").val(),
@@ -226,10 +226,9 @@ function enregistrement() {
             if (data.success) {
                 document.cookie = `code_client=${data.code_client}; expires=Fri, 31 Dec 2050 23:59:59 GMT; path=/`;
                 alert("Inscription réussie !");
-                window.location.href = "index.php";
                 montrer_recherche();
             } else {
-                $("#messageErreur").html(`<p style="color:red;">${data.message}</p>`);
+                $("#message-erreur").html(`<p style="color:red;">${data.message}</p>`);
             }
         }
     });
@@ -238,4 +237,5 @@ function enregistrement() {
 function deconnecter() {
   // TODO: sauvegarder panier
   // TODO: effacer cookie?
+  
 }

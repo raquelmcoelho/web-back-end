@@ -1,8 +1,8 @@
 <?php
-    require 'counter.php';
+    require 'php/counter.php';
     session_start();
     if (! isset($_SESSION['code_client']) && isset($_COOKIE['code_client'])) {
-        include "connexion.php";
+        include "php/connexion.php";
         $res = $connexion->prepare("SELECT nom, prenom FROM clients WHERE code_client = ?");
         $res->execute([$_COOKIE['code_client']]);
         $client = $res->fetch(PDO::FETCH_ASSOC);
@@ -39,6 +39,7 @@
         <?php if (isset($_SESSION['nom'])): ?>
             <h5>Bienvenue <?php echo $_SESSION['nom'] ?> <?php echo $_SESSION['prenom'] ?></h5>
             <button type="button" onclick="montrer_panier()">Voir le Panier</button>
+            <button type="button" onclick="vider_panier()">Vider le Panier</button>
             <button type="button" onclick="deconnecter()">Quitter</button>
         <?php else: ?>
             <button type="button" onclick="montrer_formulaire()">Inscription</button>
@@ -81,7 +82,7 @@
             <button type="submit">S'inscrire</button>
             <button type="button" onclick="montrer_recherche()">Annuler</button>
         </form>
-        <div id="messageErreur"></div>
+        <div id="message_erreur"></div>
     </section>
 </div>
 
