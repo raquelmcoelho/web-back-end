@@ -2,6 +2,8 @@ function by_id(id) {
   return document.getElementById(id);
 }
 
+
+// Recherches
 function recherche_auteurs() {
   let debnom = by_id("debnom").value;
   if(debnom == "") {
@@ -21,16 +23,6 @@ function recherche_auteurs() {
     }
   });
 }
-
-function affiche_auteurs(auteurs) {
-  let divGauche = by_id("div-gauche");
-  divGauche.innerHTML = "<ol>";
-  auteurs.forEach((auteur) => {
-    divGauche.innerHTML += `<li><a href="#" onclick="recherche_ouvrages_auteur(${auteur.code})">${auteur.nom} ${auteur.prenom}</a></li>`;
-  });
-  divGauche.innerHTML += "</ol>";
-}
-
 function recherche_ouvrages_titre() {
   let debtitre = by_id("debtitre").value;
   if(!debtitre) {
@@ -50,6 +42,31 @@ function recherche_ouvrages_titre() {
     }
   });
 }
+
+function recherche_ouvrages_auteur(code) {
+  $.ajax({
+    type: "GET",
+    url: "php/recherche.php?type=ouvrages_auteur&key=" + code,
+    dataType: "json",
+    success: function (data) {
+      affiche_ouvrages(data);
+    },
+    error: function (xhr, status, error) {
+      console.error("Erreur:", error);
+    }
+  });
+}
+
+// Affichage
+function affiche_auteurs(auteurs) {
+  let divGauche = by_id("div-gauche");
+  divGauche.innerHTML = "<ol>";
+  auteurs.forEach((auteur) => {
+    divGauche.innerHTML += `<li><a href="#" onclick="recherche_ouvrages_auteur(${auteur.code})">${auteur.nom} ${auteur.prenom}</a></li>`;
+  });
+  divGauche.innerHTML += "</ol>";
+}
+
 
 function affiche_ouvrages(ouvrages) {
   let divDroite = by_id("div-droite");
@@ -74,7 +91,7 @@ function affiche_exemplaires(ouvrageCode, exemplaires) {
     ul.innerHTML = `<li>Code: ${exemplaire.code}`;
     if (exemplaire.prix !== null) {
       ul.innerHTML += `Prix: ${exemplaire.prix} euros`;
-      ul.innerHTML += `<button onclick='ajouter_panier(${exemplaire.code})'> 🛒 Ajouter </button>`;
+      ul.innerHTML += `<button onclick='ajouter_livre(${exemplaire.code})'> 🛒 Ajouter </button>`;
     } else {
       // TODO: decorar
       ul.innerHTML += `Produit Indisponible`;
@@ -83,21 +100,32 @@ function affiche_exemplaires(ouvrageCode, exemplaires) {
   });
 }
 
-function recherche_ouvrages_auteur(code) {
-  $.ajax({
-    type: "GET",
-    url: "php/recherche.php?type=ouvrages_auteur&key=" + code,
-    dataType: "json",
-    success: function (data) {
-      affiche_ouvrages(data);
-    },
-    error: function (xhr, status, error) {
-      console.error("Erreur:", error);
-    }
-  });
+function afficher_panier(panier) {
+  let panierDiv = document.getElementById("panier-div");
+  if (panier.length === 0) {
+      panierDiv.innerHTML = "<p>Votre panier est vide.</p>";
+  } else {
+      let html = " <h1>Votre Panier</h1><ul>";
+      let prix = 0.0;
+
+      panier.forEach(item => {
+          prix += parseFloat(item.prix);
+          html += `<li>${item.nom} - ${item.editeur} (Quantité: ${item.quantite}) (Prix: <?= htmlspecialchars(${item.prix}) ?> €)
+                   <button onclick="retirer_livre(${item.code_exemplaire})">Supprimer</button></li>`;
+      });
+
+      html += `<li><strong>Total: ${prix.toFixed(2)} €</strong></li>`;
+      html += "</ul>";
+      panierDiv.innerHTML = html;
+  }
+
+  panierDiv.innerHTML += "<button type='button' onclick='montrer_recherche()'>Fermer</button>";
+  panierDiv.innerHTML += `<button type='button' onclick='commander()'>Commander</button>`;
 }
 
-function ajouter_panier(code_exemplaire) {
+
+// Panier 
+function ajouter_livre(code_exemplaire) {
   $.ajax({
     type: 'POST',
     url: 'php/panier.php?action=ajouter',
@@ -157,29 +185,6 @@ function mise_a_jour_panier() {
   });
 }
 
-function afficher_panier(panier) {
-  let panierDiv = document.getElementById("panier-div");
-  if (panier.length === 0) {
-      panierDiv.innerHTML = "<p>Votre panier est vide.</p>";
-  } else {
-      let html = " <h1>Votre Panier</h1><ul>";
-      let prix = 0.0;
-
-      panier.forEach(item => {
-          prix += parseFloat(item.prix);
-          html += `<li>${item.nom} - ${item.editeur} (Quantité: ${item.quantite}) (Prix: <?= htmlspecialchars(${item.prix}) ?> €)
-                   <button onclick="retirer_livre(${item.code_exemplaire})">Supprimer</button></li>`;
-      });
-
-      html += `<li><strong>Total: ${prix.toFixed(2)} €</strong></li>`;
-      html += "</ul>";
-      panierDiv.innerHTML = html;
-  }
-
-  panierDiv.innerHTML += "<button type='button' onclick='montrer_recherche()'>Fermer</button>";
-  panierDiv.innerHTML += `<button type='button' onclick='commander()'>Commander</button>`;
-}
-
 // source: https://stackoverflow.com/questions/10730362/get-cookie-by-name
 function get_cookie(name) {
   const value = `; ${document.cookie}`;
@@ -209,6 +214,8 @@ function commander() {
   }
 }
 
+
+// Tabs hide/show
 function montrer_panier() {
   mise_a_jour_panier();
   document.getElementById("form-div").style.display = "none";
@@ -228,6 +235,9 @@ function montrer_formulaire() {
   document.getElementById("panier-div").style.display = "none";
 }
 
+
+
+// Login / Logout
 function enregistrement() {
     $.ajax({
         type: "POST",
