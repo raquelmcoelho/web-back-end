@@ -6,7 +6,7 @@ $code_client = $_SESSION['code_client'] ?? null;
 $code_exemplaire = $_POST['code_exemplaire'] ?? null;
 $action = $_GET['action'] ?? null;
 
-if (!$code_client || !$code_exemplaire || !$action) {
+if (!$code_client || !$action || !$code_exemplaire && $action !== 'commander') {
     echo json_encode(["message" => "Erreur: client, code ou action invalide"]);
     exit;
 }
@@ -46,6 +46,25 @@ if ($action === 'remove') {
     $req->execute(['code_client' => $code_client, 'code_exemplaire' => $code_exemplaire]);
 
     echo json_encode(["message" => "Livre retiré du panier"]);
+    exit;
+}
+
+
+if($action === 'commander') {
+    // TODO loop
+    // $req = $connexion->prepare("
+    //     INSERT INTO commande (code_client, code_exemplaire, quantite, prix)
+    //     VALUES (
+    //     :code_client, 
+    //     :code_exemplaire, 
+    //     (SELECT quantite FROM panier WHERE code_client = :code_client AND code_exemplaire = :code_exemplaire),
+    //     (SELECT prix FROM exemplaires WHERE code_exemplaire = :code_exemplaire LIMIT 1) * quantite
+    //     );
+    //     DELETE FROM panier WHERE code_client = :code_client;
+    // ");
+    // $req->execute(['code_client' => $code_client]);
+
+    echo json_encode(["message" => "Commande passée avec succès"]);
     exit;
 }
 

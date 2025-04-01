@@ -133,17 +133,49 @@ function recharger_panier() {
           panierDiv.innerHTML = "<p>Votre panier est vide.</p>";
       } else {
           let html = " <h1>Votre Panier</h1><ul>";
+          let prix = 0.0;
           panier.forEach(item => {
+              prix += parseFloat(item.prix);
               html += `<li>${item.nom} - ${item.editeur} (Quantité: ${item.quantite}) (Prix: <?= htmlspecialchars(${item.prix}) ?> €)
                        <button onclick="remove_livre(${item.code_exemplaire})">Supprimer</button></li>`;
           });
+
+          html += `<li><strong>Total: ${prix.toFixed(2)} €</strong></li>`;
           html += "</ul>";
           panierDiv.innerHTML = html;
       }
 
-      panierDiv.innerHTML += "<button type='button' onclick='montrer_recherche()'>Retour à la recherche</button>";
+      panierDiv.innerHTML += "<button type='button' onclick='montrer_recherche()'>Fermer</button>";
+      panierDiv.innerHTML += `<button type='button' onclick='commander()'>Commander</button>`;
   })
   .catch(error => console.error("Erreur:", error));
+}
+
+// source: https://stackoverflow.com/questions/10730362/get-cookie-by-name
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+function commander() {
+  let code_client = getCookie("code_client");
+  if (code_client) {
+    fetch("panier.php?action=commander", {
+      method: "POST",
+      body: new URLSearchParams({ code_client }),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        alert(data.message);
+        recharger_panier();
+      })
+      .catch((error) => console.error("Erreur:", error));
+  } else {
+    alert("Vous devez vous inscrire pour commander.");
+    montrer_formulaire();
+  }
 }
 
 function montrer_panier() {
@@ -193,4 +225,5 @@ function enregistrement() {
 
 function deconnecter() {
   // TODO: sauvegarder panier
+  // TODO: effacer cookie?
 }
