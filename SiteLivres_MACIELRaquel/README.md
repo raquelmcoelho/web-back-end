@@ -2,8 +2,8 @@
 
 Ce projet est un système de bibliothèque virtuelle permettant aux utilisateurs de rechercher des livres, de consulter les exemplaires disponibles et de gérer un panier d'achat. 
 
-[](demo/demo6.png)
-[](demo/demo15.png)
+![demo-portable](demo/demo6.png)
+![demo-desktop](demo/demo15.png)
 
 ## Prérequis  
 
