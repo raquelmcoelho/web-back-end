@@ -16,7 +16,7 @@ Avant d'exécuter le projet, assurez-vous d'avoir installé :
 ## Installation  
 
 1. **Configurer la base de données**  
-   - Créez une base de données dans MySQL :
+   - Créez la base de données :
     ```sh
      sudo -u postgres psql
      ```  
@@ -48,7 +48,7 @@ Avant d'exécuter le projet, assurez-vous d'avoir installé :
 📂 bibliotheque-virtuelle
 │-- 📂 demo/               # Demonstration par video, pdf et images
 │-- 📂 php/                # Code  en PHP
-│-- 📂 sql/               # Fichiers SQL pour la création de la base de données et fonction
+│-- 📂 sql/                # Fichiers SQL pour la création de la base de données et fonction
 │-- 📜 counter.txt         # Fichier pour counter visites
 │-- 📜 index.php           # Page principale
 │-- 📜 logo.png            # Logo
@@ -63,4 +63,4 @@ Avant d'exécuter le projet, assurez-vous d'avoir installé :
 - **Gestion dynamique du panier**  
 - **Affichage des détails des exemplaires**  
 - **Système d'inscription**  
-- **Interface responsive et ergonomique**  
+- **Interface assez responsive et ergonomique**  
