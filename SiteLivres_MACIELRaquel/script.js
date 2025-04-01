@@ -125,7 +125,7 @@ function remove_livre(code_exemplaire) {
 
 function recharger_panier() {
   // TODO: change to Ajax
-  fetch("get_panier.php")
+  fetch("panier.php?action=afficher")
   .then(response => response.json())
   .then(panier => {
       let panierDiv = document.getElementById("panier-div");
@@ -134,6 +134,7 @@ function recharger_panier() {
       } else {
           let html = " <h1>Votre Panier</h1><ul>";
           let prix = 0.0;
+          
           panier.forEach(item => {
               prix += parseFloat(item.prix);
               html += `<li>${item.nom} - ${item.editeur} (Quantité: ${item.quantite}) (Prix: <?= htmlspecialchars(${item.prix}) ?> €)

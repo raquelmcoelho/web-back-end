@@ -6,7 +6,7 @@ $code_client = $_SESSION['code_client'] ?? null;
 $code_exemplaire = $_POST['code_exemplaire'] ?? null;
 $action = $_GET['action'] ?? null;
 
-if (!$code_client || !$action || !$code_exemplaire && $action !== 'commander') {
+if (!$code_client || !$action || !$code_exemplaire && ($action == 'add' || $action == 'remove')) {
     echo json_encode(["message" => "Erreur: client, code ou action invalide"]);
     exit;
 }
@@ -67,6 +67,39 @@ if($action === 'commander') {
     echo json_encode(["message" => "Commande passée avec succès"]);
     exit;
 }
+
+// TODO vider panier
+
+// if($action === 'vider') {
+//     $req = $connexion->prepare("
+//         DELETE FROM panier WHERE code_client = :code_client
+//     ");
+//     $req->execute(['code_client' => $code_client]);
+
+//     echo json_encode(["message" => "Panier vidé"]);
+//     exit;
+// }
+
+if($action === 'afficher') {
+    $panier = [];
+
+    if ($code_client) {
+        $req = $connexion->prepare("
+            SELECT o.nom, ed.nom as editeur, p.code_exemplaire, p.quantite, e.prix
+            FROM panier p
+            JOIN exemplaire e ON p.code_exemplaire = e.code
+            JOIN ouvrage o ON o.code = e.code_ouvrage
+            JOIN editeurs ed ON ed.code = e.code_editeur
+            WHERE p.code_client = :code_client
+        ");
+        $req->execute(['code_client' => $code_client]);
+        $panier = $req->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    echo json_encode($panier);
+    exit;
+}
+
 
 ?>
 
